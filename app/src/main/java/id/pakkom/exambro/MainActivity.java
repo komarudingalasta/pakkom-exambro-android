@@ -453,6 +453,7 @@ public class MainActivity extends Activity {
                 + "setContext:function(s,e,n,c){try{PakKomNative.setExamContext(String(s||''),String(e||''),String(n||''),String(c||''));}catch(x){}},"
                 + "start:function(){try{PakKomNative.startExam();}catch(x){}},"
                 + "finish:function(){try{PakKomNative.finishExam();}catch(x){}},"
+                + "unlock:function(){try{PakKomNative.finishExam();}catch(x){}},"
                 + "active:function(){try{return PakKomNative.isExamActive();}catch(x){return false;}},"
                 + "violations:function(){try{return PakKomNative.getViolationCount();}catch(x){return 0;}}};"
                 + "window.addEventListener('pakkom-exam-started',function(e){var d=(e&&e.detail)||{};"
@@ -530,21 +531,44 @@ public class MainActivity extends Activity {
     }
 
     private void exitExamLock() {
-        if (!examActive) return;
+        // V4.1: clear persisted state BEFORE Android unlock begins.
+        // This prevents onResume/onWindowFocusChanged from re-locking after finish.
         examActive = false;
-        prefs.edit().putBoolean(PREF_EXAM_ACTIVE, false)
-                .remove(PREF_STUDENT_ID).remove(PREF_EXAM_ID).remove(PREF_NIS).remove(PREF_CLASS_ID).apply();
+        prefs.edit()
+                .putBoolean(PREF_EXAM_ACTIVE, false)
+                .remove(PREF_STUDENT_ID).remove(PREF_EXAM_ID)
+                .remove(PREF_NIS).remove(PREF_CLASS_ID).apply();
 
-        if (lockTaskStartedByUs || isInLockTaskMode()) {
-            try {
-                stopLockTask();
-            } catch (Exception ignored) {
-            }
-        }
-        lockTaskStartedByUs = false;
-        enterImmersiveMode();
+        forceStopExamLockTask();
         dispatchNativeStateToWeb();
-        Toast.makeText(this, "Ujian selesai — Exam Lock dilepas.", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Ujian selesai — perangkat sudah dibuka.", Toast.LENGTH_LONG).show();
+    }
+
+    private void forceStopExamLockTask() {
+        try {
+            if (isInLockTaskMode() || lockTaskStartedByUs) stopLockTask();
+        } catch (Exception ignored) {}
+        lockTaskStartedByUs = false;
+
+        DevicePolicyManager dpm =
+                (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        if (dpm != null && dpm.isDeviceOwnerApp(getPackageName())) {
+            try {
+                dpm.setLockTaskPackages(getAdminComponent(), new String[]{});
+            } catch (Exception ignored) {}
+        }
+
+        // Some Android OEMs release Lock Task asynchronously.
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!examActive && isInLockTaskMode()) {
+                try { stopLockTask(); } catch (Exception ignored) {}
+            }
+        }, 300L);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (!examActive && isInLockTaskMode()) {
+                try { stopLockTask(); } catch (Exception ignored) {}
+            }
+        }, 1000L);
     }
 
     private boolean isInLockTaskMode() {
