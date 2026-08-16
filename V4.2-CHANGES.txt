@@ -1,0 +1,21 @@
+PakKom Exambro Android V4.2 - Stable Build
+===========================================
+
+Perbaikan utama dari V4.1:
+1. Menambahkan import Handler dan Looper yang diperlukan oleh mekanisme unlock V4.1.
+   Kekurangan import ini dapat menyebabkan compile Java gagal dengan exit code 1.
+2. Exam Lock tetap hanya aktif setelah Mulai Ujian.
+3. Selesai Ujian membersihkan examActive sebelum stopLockTask.
+4. stopLockTask diverifikasi ulang 300 ms dan 1000 ms agar tidak tersangkut pada beberapa OEM.
+5. Device Owner keluar dari lock-task allowlist setelah ujian selesai.
+6. Workflow GitHub diperbarui ke checkout@v5 dan setup-java@v5.
+7. Gradle dipasang langsung sehingga workflow tidak bergantung pada Build Scan/setup-gradle.
+8. Workflow memverifikasi struktur project dan keberadaan APK sebelum upload artifact.
+
+Uji minimum sebelum distribusi:
+- Buka APK -> belum terkunci.
+- Aktifkan izin -> masuk aplikasi.
+- Mulai Ujian -> lock aktif.
+- Selesai Ujian -> Home/Recent kembali berfungsi.
+- Tutup dan buka APK -> tidak terkunci lagi.
+- Mulai ujian kedua -> lock dapat aktif kembali.
