@@ -10,8 +10,8 @@ android {
         applicationId = "id.pakkom.exambro"
         minSdk = 24
         targetSdk = 35
-        versionCode = 41
-        versionName = "4.1"
+        versionCode = 411
+        versionName = "4.1.1"
     }
 
     buildTypes {
