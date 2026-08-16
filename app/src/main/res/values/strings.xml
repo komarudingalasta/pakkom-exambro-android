@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PakKom Exambro</string>
+    <string name="device_admin_description">Diperlukan untuk fitur keamanan ujian PakKom Exambro. Aplikasi hanya menggunakan kebijakan yang diperlukan untuk menjaga sesi ujian.</string>
+</resources>
