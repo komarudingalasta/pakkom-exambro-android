@@ -1,0 +1,11 @@
+PakKom Exambro Android V4.1.1
+
+FIX BUILD:
+- Menambahkan import android.os.Handler
+- Menambahkan import android.os.Looper
+
+Error yang diperbaiki:
+cannot find symbol: class Handler
+cannot find symbol: variable Looper
+
+Tidak ada perubahan pada workflow GitHub Actions.
